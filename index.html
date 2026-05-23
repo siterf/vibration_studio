@@ -1279,6 +1279,156 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   background: radial-gradient(circle, rgba(196,154,90,.12) 0%, transparent 70%);
   pointer-events: none;
 }
+
+/* Dynamic Schedule Tabs */
+.schedule-days {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+.schedule-tab {
+  padding: 10px 20px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 13px;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.schedule-tab:hover {
+  color: #fff;
+  border-color: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.08);
+}
+.schedule-tab.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.schedule-loading {
+  text-align: center;
+  padding: 48px;
+  color: rgba(255,255,255,0.6);
+}
+.schedule-loading .spinner {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-radius: 50%;
+  border-top-color: var(--color-accent);
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+.schedule-error {
+  text-align: center;
+  padding: 32px;
+  background: rgba(255,107,107,0.1);
+  border: 1px solid rgba(255,107,107,0.2);
+  border-radius: var(--radius-lg);
+  color: #ff8888;
+  margin-bottom: 24px;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.schedule__table td .btn {
+  padding: 8px 16px;
+  font-size: 12px;
+  min-height: auto;
+}
+.schedule__table tr.full {
+  opacity: 0.5;
+}
+.sch-spots {
+  font-weight: 500;
+  font-size: 13px;
+}
+.sch-spots--full { color: rgba(255,255,255,.4); }
+.sch-spots--low { color: #E68A00; font-weight: 600; }
+.sch-spots--ok { color: #4CAF50; }
+
+/* Booking Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(28,22,18,.85);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal.open {
+  display: flex;
+}
+.modal__content {
+  background: #231C18;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: var(--radius-lg);
+  padding: 40px 32px;
+  width: 100%;
+  max-width: 440px;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0,0,0,.5);
+  animation: modalIn .3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.modal__close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.5);
+  font-size: 28px;
+  cursor: pointer;
+  line-height: 1;
+  transition: color var(--transition);
+}
+.modal__close:hover {
+  color: var(--color-accent);
+}
+.modal__content h3 {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--color-white);
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+.modal__subtitle {
+  font-size: 14px;
+  color: rgba(255,255,255,.5);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+.modal__datetime-badge {
+  background: rgba(196,154,90,.12);
+  border: 1px solid rgba(196,154,90,.25);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-accent);
+  text-align: center;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+.btn:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: not-allowed;
+}
 </style>
 </head>
 <body>
@@ -1519,7 +1669,6 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     </div>
   </div>
 </section>
-
 <!-- ============================================================
      SCHEDULE (РАСПИСАНИЕ)
      ============================================================ -->
@@ -1528,106 +1677,46 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     <div class="schedule__intro">
       <div>
         <span class="section-label" style="color:var(--color-accent)">Расписание</span>
-        <h2 class="section-title" style="color:#fff">Практики <em>этой недели</em></h2>
-        <p class="section-sub">25 — 31 мая. Актуальное расписание — в нашем VK.</p>
+        <h2 class="section-title" style="color:#fff">Практики <em>ближайших дней</em></h2>
+        <p class="section-sub" id="scheduleSubtitle">Загрузка актуального расписания...</p>
       </div>
       <a href="https://vk.com/vibration_studio" target="_blank" rel="noopener" class="btn btn-outline">Актуальное в VK</a>
     </div>
-    <div class="schedule__table-wrap reveal">
+
+    <!-- Табы выбора дня -->
+    <div class="schedule-days reveal" id="scheduleTabs"></div>
+
+    <!-- Индикатор загрузки -->
+    <div class="schedule-loading reveal" id="scheduleLoading">
+      <div class="spinner"></div>
+      <p>Синхронизируем расписание с Google Таблицей...</p>
+    </div>
+
+    <!-- Блок ошибки -->
+    <div class="schedule-error reveal" id="scheduleError" style="display: none;">
+      <p>Не удалось загрузить актуальное расписание. Пожалуйста, позвоните нам: <a href="tel:+79108149832" style="color:inherit; text-decoration:underline;">+7 (910) 814-98-32</a> или проверьте нашу группу VK.</p>
+    </div>
+
+    <!-- Таблица с записями -->
+    <div class="schedule__table-wrap reveal" id="scheduleTableWrap" style="display: none;">
       <table class="schedule__table">
         <thead>
           <tr>
             <th>Направление</th>
-            <th>День</th>
             <th>Время</th>
             <th>Преподаватель</th>
             <th>Тип</th>
+            <th>Свободно мест</th>
+            <th>Запись</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <td>Здоровая спина</td>
-            <td>Понедельник</td>
-            <td>11:00</td>
-            <td>Ирина Беляева</td>
-            <td><span class="sch-tag sch-tag--back">Спина</span></td>
-          </tr>
-          <tr>
-            <td>Женская йога</td>
-            <td>Понедельник</td>
-            <td>09:00</td>
-            <td>Анастасия Михайлова</td>
-            <td><span class="sch-tag sch-tag--women">Женская</span></td>
-          </tr>
-          <tr>
-            <td>Женская йога</td>
-            <td>Вторник</td>
-            <td>10:00</td>
-            <td>Анастасия Михайлова</td>
-            <td><span class="sch-tag sch-tag--women">Женская</span></td>
-          </tr>
-          <tr>
-            <td>Здоровая спина</td>
-            <td>Вторник</td>
-            <td>13:00</td>
-            <td>Ирина Беляева</td>
-            <td><span class="sch-tag sch-tag--back">Спина</span></td>
-          </tr>
-          <tr>
-            <td>Женская йога</td>
-            <td>Среда</td>
-            <td>09:00 / 14:00</td>
-            <td>Анастасия Михайлова</td>
-            <td><span class="sch-tag sch-tag--women">Женская</span></td>
-          </tr>
-          <tr>
-            <td>Здоровая спина</td>
-            <td>Четверг</td>
-            <td>08:30</td>
-            <td>Ирина Беляева</td>
-            <td><span class="sch-tag sch-tag--back">Спина</span></td>
-          </tr>
-          <tr>
-            <td>Женская йога</td>
-            <td>Четверг</td>
-            <td>10:00</td>
-            <td>Анастасия Михайлова</td>
-            <td><span class="sch-tag sch-tag--women">Женская</span></td>
-          </tr>
-          <tr>
-            <td>Энергойога</td>
-            <td>Пятница</td>
-            <td>09:00</td>
-            <td>Надежда Круглова</td>
-            <td><span class="sch-tag sch-tag--energy">Энергия</span></td>
-          </tr>
-          <tr>
-            <td>Йога для начинающих</td>
-            <td>Понедельник</td>
-            <td>18:30</td>
-            <td>Надежда Круглова</td>
-            <td><span class="sch-tag sch-tag--begin">Начинающим</span></td>
-          </tr>
-          <tr>
-            <td>Йога для начинающих</td>
-            <td>Суббота</td>
-            <td>09:30</td>
-            <td>Надежда Круглова</td>
-            <td><span class="sch-tag sch-tag--begin">Начинающим</span></td>
-          </tr>
-          <tr>
-            <td>Гонг-медитация</td>
-            <td>Суббота</td>
-            <td>17:00</td>
-            <td>Юлия Абрамова</td>
-            <td><span class="sch-tag sch-tag--gong">Медитация</span></td>
-          </tr>
+        <tbody id="scheduleList">
+          <!-- Строки генерируются динамически через JS -->
         </tbody>
       </table>
     </div>
   </div>
 </section>
-
 <!-- ============================================================
      TEAM (КОМАНДА)
      ============================================================ -->
@@ -1783,7 +1872,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
         <p class="review-card__text">«Были в студии с мужем на годовщину свадьбы. Невероятно уютное и эстетичное место. Я выбрала арома ритуал «Симфония клеток», который проводила мастер Яна... Весь процесс лёгкий, комфортный и самое главное — без спешки.»</p>
         <p class="review-card__result">Идеальное парное свидание, глубокое расслабление.</p>
         <div class="review-card__author">
-          <img class="review-card__avatar" src="assets/review-ekaterina.png" alt="Екатерина">
+          <img class="review-card__avatar" src="assets/review-ekaterina.webp" alt="Екатерина">
           <div>
             <div class="review-card__name">Екатерина S. и Юрий С.</div>
             <div class="review-card__source">Яндекс Карты</div>
@@ -1802,7 +1891,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
         <p class="review-card__text">«Проводили закрытое мероприятие — день рождения. Программа на 4 часа пролетела как мгновение! Всё новое, дизайнерский роскошный ремонт... Чего стоит только одна луна в основном зале!!!!»</p>
         <p class="review-card__result">Восхищение гостей закрытым ивентом.</p>
         <div class="review-card__author">
-          <img class="review-card__avatar" src="assets/review-nadezhda.png" alt="Надежда">
+          <img class="review-card__avatar" src="assets/review-nadezhda.webp" alt="Надежда">
           <div>
             <div class="review-card__name">Надежда</div>
             <div class="review-card__source">Яндекс Карты</div>
@@ -1821,7 +1910,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
         <p class="review-card__text">«Прекрасное и очень наполненное любовью пространство. Очень красивое и продуманное до мелочей! Каждая деталь создаёт атмосферу покоя и уюта.»</p>
         <p class="review-card__result">Эмоциональный комфорт и эстетическое удовольствие.</p>
         <div class="review-card__author">
-          <img class="review-card__avatar" src="assets/review-yulia.png" alt="Юлия">
+          <img class="review-card__avatar" src="assets/review-yulia.webp" alt="Юлия">
           <div>
             <div class="review-card__name">Julia Korableva</div>
             <div class="review-card__source">Google Maps</div>
@@ -1969,7 +2058,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     <div class="contacts__grid">
       <div class="contacts__map reveal">
         <iframe
-          src="https://yandex.ru/map-widget/v1/?text=%D1%8F%D1%80%D0%BE%D1%81%D0%BB%D0%B0%D0%B2%D0%BB%D1%8C%2C+%D1%83%D0%BB+%D0%9D%D0%B5%D0%BA%D1%80%D0%B0%D1%81%D0%BE%D0%B2%D0%B0+68&z=16&l=map"
+          src="https://yandex.ru/map-widget/v1/?ll=39.864519%2C57.633484&z=17&l=map&pt=39.864519%2C57.633484%2Cpm2rdl"
           title="Студия Вибрация на карте"
           allowfullscreen
           loading="lazy">
@@ -2074,6 +2163,52 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 </div>
 
 <!-- ============================================================
+     BOOKING MODAL (МОДАЛЬНОЕ ОКНО ЗАПИСИ)
+     ============================================================ -->
+<div class="modal" id="bookingModal" role="dialog" aria-hidden="true" aria-modal="true" aria-labelledby="bookingModalTitle">
+  <div class="modal__content">
+    <button class="modal__close" id="closeBookingModal" aria-label="Закрыть">&times;</button>
+    <h3 id="bookingModalTitle">Записаться на практику</h3>
+    <p class="modal__subtitle" id="bookingModalSubtitle">Заполните форму, чтобы забронировать место</p>
+    
+    <div class="modal__datetime-badge" id="modalDateTimeBadge"></div>
+    
+    <form id="modalBookingForm" novalidate>
+      <div class="form__group">
+        <input class="form__input" type="text" id="modalName" name="name" placeholder="Ваше имя" required autocomplete="given-name">
+      </div>
+      <div class="form__group">
+        <input class="form__input" type="tel" id="modalPhone" name="phone" placeholder="+7 (___) ___-__-__" required autocomplete="tel">
+      </div>
+      
+      <div class="form__consent">
+        <input type="checkbox" id="modalConsent" name="consent" required>
+        <label for="modalConsent">Нажимая кнопку, вы соглашаетесь с <a href="#privacy">политикой конфиденциальности</a></label>
+      </div>
+      
+      <input type="hidden" id="modalDirection" name="direction">
+      <input type="hidden" id="modalDate" name="date">
+      <input type="hidden" id="modalTime" name="time">
+      <input type="hidden" id="modalAction" name="action" value="book">
+      
+      <button type="submit" class="btn btn-primary form__submit" id="modalSubmitBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Подтвердить запись
+      </button>
+    </form>
+    
+    <div class="form__success" id="modalFormSuccess" style="display: none;">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h4>Запись подтверждена!</h4>
+      <p id="modalSuccessMessage">Ждем вас на занятии в назначенное время.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
      FLOATING BUTTONS
      ============================================================ -->
 <a href="https://wa.me/79108149832" class="whatsapp-float" target="_blank" rel="noopener noreferrer" id="whatsapp-btn" aria-label="Написать в WhatsApp">
@@ -2094,7 +2229,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 /* ── CONFIG ─────────────────────────────────────────────────── */
 const CONFIG = {
-  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxIP8PxL1mkQ15xurTnIkvrMswGYE807nYgYIY-rKnurfSTS4Jdg14fXvera7pR0DfmXg/exec',  // после деплоя Code.gs
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbDSdiwnYVB4FTrfmYg_BRF2Ne62oZOdafGf_ePIu2knMPrUbpToNjsBJolz-3A5Dlz0A/exec',  // после деплоя Code.gs
   WHATSAPP: '79108149832',
   TELEGRAM: '79108149832',
 };
@@ -2230,24 +2365,360 @@ function initPhoneMask(input) {
 }
 initPhoneMask(document.getElementById('phone'));
 
-/* ── CSRF TOKEN ──────────────────────────────────────────────── */
+/* ── DYNAMIC SCHEDULE & CSRF TOKEN ───────────────────────────── */
 let csrfToken = '';
-async function fetchCsrfToken() {
-  if (CONFIG.APPS_SCRIPT_URL !== 'ВСТАВЬТЕ_ВАШ_URL') {
-    try {
-      const res = await fetch(CONFIG.APPS_SCRIPT_URL);
-      const data = await res.json();
-      if (data && data._token) {
-        csrfToken = data._token;
-      }
-    } catch (err) {
-      console.warn('Failed to fetch security token:', err);
+let scheduleCache = null;
+const DAYS_ORDER = [
+  { key: 'Сегодня', label: 'Сегодня' }, 
+  { key: 'Завтра', label: 'Завтра' },
+  { key: 'Пн', label: 'Пн' }, 
+  { key: 'Вт', label: 'Вт' }, 
+  { key: 'Ср', label: 'Ср' },
+  { key: 'Чт', label: 'Чт' }, 
+  { key: 'Пт', label: 'Пт' }, 
+  { key: 'Сб', label: 'Сб' }, 
+  { key: 'Вс', label: 'Вс' }
+];
+let currentDayKey = 'Сегодня';
+
+async function loadSchedule() {
+  const scheduleLoading = document.getElementById('scheduleLoading');
+  const scheduleError = document.getElementById('scheduleError');
+  const scheduleTableWrap = document.getElementById('scheduleTableWrap');
+  const scheduleSubtitle = document.getElementById('scheduleSubtitle');
+  
+  if (CONFIG.APPS_SCRIPT_URL === 'ВСТАВЬТЕ_ВАШ_URL' || !CONFIG.APPS_SCRIPT_URL) {
+    scheduleLoading.style.display = 'none';
+    scheduleError.style.display = 'block';
+    scheduleError.querySelector('p').textContent = 'Пожалуйста, настройте APPS_SCRIPT_URL в CONFIG.';
+    return;
+  }
+
+  try {
+    const response = await fetch(CONFIG.APPS_SCRIPT_URL);
+    if (!response.ok) throw new Error('HTTP error: ' + response.status);
+    const data = await response.json();
+    
+    if (data && data._token) {
+      csrfToken = data._token;
+      delete data._token;
     }
+    
+    scheduleCache = data;
+    scheduleLoading.style.display = 'none';
+    
+    const availableDays = Object.keys(scheduleCache);
+    if (availableDays.length === 0) {
+      scheduleSubtitle.textContent = 'В расписании пока нет занятий.';
+      scheduleError.style.display = 'none';
+      scheduleTableWrap.style.display = 'none';
+      return;
+    }
+    
+    scheduleError.style.display = 'none';
+    scheduleTableWrap.style.display = 'block';
+    
+    // Вычисляем диапазон дат
+    const allDates = [];
+    Object.values(scheduleCache).forEach(dayList => {
+      dayList.forEach(c => {
+        if (c.date) allDates.push(c.date);
+      });
+    });
+    if (allDates.length > 0) {
+      const sortedDates = allDates.map(dStr => {
+        const [d, m, y] = dStr.split('.').map(Number);
+        return new Date(y, m - 1, d);
+      }).sort((a, b) => a - b);
+      
+      const minDateStr = sortedDates[0].toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+      const maxDateStr = sortedDates[sortedDates.length - 1].toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+      scheduleSubtitle.textContent = `С ${minDateStr} по ${maxDateStr}. Камерные группы до 8 человек.`;
+    } else {
+      scheduleSubtitle.textContent = 'Камерные группы до 8 человек. Запись обязательна.';
+    }
+    
+    renderTabs();
+    renderDay(currentDayKey);
+  } catch (err) {
+    console.warn('Failed to load schedule:', err);
+    scheduleLoading.style.display = 'none';
+    scheduleError.style.display = 'block';
   }
 }
-document.addEventListener('DOMContentLoaded', fetchCsrfToken);
 
-/* ── BOOKING FORM ────────────────────────────────────────────── */
+function renderTabs() {
+  const tabsContainer = document.getElementById('scheduleTabs');
+  const availableDays = scheduleCache ? Object.keys(scheduleCache) : [];
+  if (availableDays.length === 0) return;
+  
+  tabsContainer.innerHTML = DAYS_ORDER
+    .filter(d => availableDays.includes(d.key))
+    .map(d => `<button class="schedule-tab" data-day="${d.key}">${d.label}</button>`)
+    .join('');
+    
+  if (!availableDays.includes(currentDayKey)) {
+    currentDayKey = availableDays[0];
+  }
+  
+  const activeTab = tabsContainer.querySelector(`[data-day="${currentDayKey}"]`);
+  if (activeTab) {
+    activeTab.classList.add('active');
+  }
+}
+
+const tagClasses = {
+  'Спина': 'sch-tag--back',
+  'Женская': 'sch-tag--women',
+  'Начинающим': 'sch-tag--begin',
+  'Энергия': 'sch-tag--energy',
+  'Медитация': 'sch-tag--gong'
+};
+
+function renderDay(dayKey) {
+  const scheduleList = document.getElementById('scheduleList');
+  if (!scheduleCache) return;
+  
+  const classes = scheduleCache[dayKey] || [];
+  if (classes.length === 0) {
+    scheduleList.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 32px; color:rgba(255,255,255,.4);">В этот день занятий нет</td></tr>';
+    return;
+  }
+  
+  scheduleList.innerHTML = classes.map(c => {
+    const available = c.available !== undefined ? Number(c.available) : 8;
+    const isFull = available <= 0;
+    
+    let spotsText = '';
+    let spotsClass = '';
+    
+    if (isFull) {
+      spotsText = 'Нет мест';
+      spotsClass = 'sch-spots--full';
+    } else if (available <= 3) {
+      spotsText = `Осталось ${available} ${available === 1 ? 'место' : 'места'}`;
+      spotsClass = 'sch-spots--low';
+    } else {
+      spotsText = `${available} мест`;
+      spotsClass = 'sch-spots--ok';
+    }
+    
+    const tagClass = tagClasses[c.type] || 'sch-tag--begin';
+    const typeLabel = c.type || 'Йога';
+    
+    return `
+      <tr class="${isFull ? 'full' : ''}">
+        <td><strong>${c.title}</strong></td>
+        <td>${c.time}</td>
+        <td>${c.trainer}</td>
+        <td><span class="sch-tag ${tagClass}">${typeLabel}</span></td>
+        <td><span class="sch-spots ${spotsClass}">${spotsText}</span></td>
+        <td>
+          <button class="btn ${isFull ? 'btn-outline' : 'btn-primary'}" 
+                  data-booking-btn 
+                  data-direction="${c.title}" 
+                  data-date="${c.date}" 
+                  data-time="${c.time}" 
+                  data-available="${available}"
+                  ${isFull ? 'disabled' : ''}>
+            ${isFull ? 'Нет мест' : 'Записаться'}
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Клик по табам
+document.getElementById('scheduleTabs').addEventListener('click', e => {
+  const tab = e.target.closest('.schedule-tab');
+  if (!tab) return;
+  
+  document.querySelectorAll('.schedule-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  currentDayKey = tab.dataset.day;
+  renderDay(currentDayKey);
+});
+
+/* ── MODAL BOOKING LOGIC ───────────────────────────────────────── */
+const bookingModal = document.getElementById('bookingModal');
+const modalDirectionInput = document.getElementById('modalDirection');
+const modalDateInput = document.getElementById('modalDate');
+const modalTimeInput = document.getElementById('modalTime');
+const modalDateTimeBadge = document.getElementById('modalDateTimeBadge');
+const modalFormWrapper = document.getElementById('modalBookingForm');
+const modalFormSuccess = document.getElementById('modalFormSuccess');
+const modalSubmitBtn = document.getElementById('modalSubmitBtn');
+
+function _formatDateDisplay(ddmmyyyy) {
+  if (!ddmmyyyy || !/^\d{2}\.\d{2}\.\d{4}$/.test(ddmmyyyy)) return ddmmyyyy;
+  const [d, m, y] = ddmmyyyy.split('.').map(Number);
+  const dt = new Date(y, m - 1, d);
+  const str = dt.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function openBookingModal({ direction, date, time }) {
+  modalDirectionInput.value = direction;
+  modalDateInput.value = date;
+  modalTimeInput.value = time;
+  
+  const dateFormatted = _formatDateDisplay(date);
+  modalDateTimeBadge.innerHTML = `<strong>${direction}</strong><br>${dateFormatted} в ${time}`;
+  
+  modalFormWrapper.reset();
+  modalFormWrapper.style.display = 'block';
+  modalFormSuccess.style.display = 'none';
+  modalSubmitBtn.disabled = false;
+  modalSubmitBtn.innerHTML = `
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    Подтвердить запись
+  `;
+  
+  modalFormWrapper.querySelectorAll('.form__error-msg').forEach(el => el.remove());
+  modalFormWrapper.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+  
+  bookingModal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  
+  setTimeout(() => document.getElementById('modalName').focus(), 100);
+}
+
+function closeBookingModal() {
+  bookingModal.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('closeBookingModal').addEventListener('click', closeBookingModal);
+bookingModal.addEventListener('click', e => {
+  if (e.target === bookingModal) closeBookingModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && bookingModal.classList.contains('open')) closeBookingModal();
+});
+
+// Клик по кнопкам расписания
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-booking-btn]');
+  if (!btn) return;
+  e.preventDefault();
+  
+  const direction = btn.getAttribute('data-direction');
+  const date = btn.getAttribute('data-date');
+  const time = btn.getAttribute('data-time');
+  const available = parseInt(btn.getAttribute('data-available') || '0', 10);
+  
+  if (available <= 0) {
+    alert('Извините, на это занятие мест больше нет.');
+    return;
+  }
+  
+  openBookingModal({ direction, date, time });
+});
+
+// Инициализация маски для телефона модального окна
+initPhoneMask(document.getElementById('modalPhone'));
+
+// Отправка формы из модального окна
+modalFormWrapper.addEventListener('submit', async e => {
+  e.preventDefault();
+  
+  const nameInput = document.getElementById('modalName');
+  const phoneInput = document.getElementById('modalPhone');
+  const consentCheckbox = document.getElementById('modalConsent');
+  
+  const name = nameInput.value.trim();
+  const phone = phoneInput.value.trim();
+  const consent = consentCheckbox.checked;
+  
+  modalFormWrapper.querySelectorAll('.form__error-msg').forEach(el => el.remove());
+  modalFormWrapper.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+  
+  let hasErrors = false;
+  
+  function showModalError(el, message) {
+    el.classList.add('error');
+    const parent = el.parentElement;
+    const errorSpan = document.createElement('span');
+    errorSpan.className = 'form__error-msg';
+    errorSpan.textContent = message;
+    parent.appendChild(errorSpan);
+    hasErrors = true;
+  }
+  
+  if (name.length < 2) {
+    showModalError(nameInput, 'Имя должно содержать не менее 2 символов');
+  }
+  
+  const phoneDigits = phone.replace(/\D/g, '');
+  if (phoneDigits.length < 11) {
+    showModalError(phoneInput, 'Введите корректный номер (11 цифр)');
+  }
+  
+  if (!consent) {
+    const consentContainer = modalFormWrapper.querySelector('.form__consent');
+    const errorSpan = document.createElement('span');
+    errorSpan.className = 'form__error-msg';
+    errorSpan.style.marginTop = '8px';
+    errorSpan.textContent = 'Необходимо согласие на обработку данных';
+    consentContainer.appendChild(errorSpan);
+    hasErrors = true;
+  }
+  
+  if (hasErrors) return;
+  
+  modalSubmitBtn.disabled = true;
+  modalSubmitBtn.textContent = 'Отправляем...';
+  
+  if (CONFIG.APPS_SCRIPT_URL !== 'ВСТАВЬТЕ_ВАШ_URL' && CONFIG.APPS_SCRIPT_URL) {
+    try {
+      const params = new URLSearchParams();
+      params.append('name', name);
+      params.append('phone', phoneDigits); // Чистый номер!
+      params.append('direction', modalDirectionInput.value);
+      params.append('date', modalDateInput.value);
+      params.append('time', modalTimeInput.value);
+      params.append('token', csrfToken);
+      params.append('action', 'book');
+      params.append('source', window.location.href);
+      
+      const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params
+      });
+      
+      const result = await response.json();
+      if (result && !result.success) {
+        alert(result.error || 'Произошла ошибка при записи.');
+        modalSubmitBtn.disabled = false;
+        modalSubmitBtn.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Подтвердить запись
+        `;
+        loadSchedule();
+        return;
+      }
+    } catch (err) {
+      console.warn('Modal form send error:', err);
+      alert('Ошибка соединения с сервером. Пожалуйста, попробуйте позже.');
+      modalSubmitBtn.disabled = false;
+      modalSubmitBtn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Подтвердить запись
+      `;
+      return;
+    }
+  }
+  
+  modalFormWrapper.style.display = 'none';
+  modalFormSuccess.style.display = 'block';
+  
+  setTimeout(loadSchedule, 1000);
+  setTimeout(closeBookingModal, 3000);
+});
+
+/* ── GENERAL BOOKING FORM ──────────────────────────────────────── */
 const bookingForm = document.getElementById('bookingForm');
 const submitBtn   = document.getElementById('submitBtn');
 const formWrapper = document.getElementById('formWrapper');
@@ -2266,7 +2737,6 @@ bookingForm.addEventListener('submit', async e => {
   const goal    = goalSelect.value;
   const consent = consentCheckbox.checked;
 
-  // Очистка предыдущих ошибок
   document.querySelectorAll('.form__error-msg').forEach(el => el.remove());
   document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
 
@@ -2305,19 +2775,16 @@ bookingForm.addEventListener('submit', async e => {
     hasErrors = true;
   }
 
-  if (hasErrors) {
-    return;
-  }
+  if (hasErrors) return;
 
   submitBtn.disabled = true;
   submitBtn.textContent = 'Отправляем...';
 
-  // Если URL задан — отправляем, иначе эмулируем
-  if (CONFIG.APPS_SCRIPT_URL !== 'ВСТАВЬТЕ_ВАШ_URL') {
+  if (CONFIG.APPS_SCRIPT_URL !== 'ВСТАВЬТЕ_ВАШ_URL' && CONFIG.APPS_SCRIPT_URL) {
     try {
       const params = new URLSearchParams();
       params.append('name', name);
-      params.append('phone', phone);
+      params.append('phone', phoneDigits); // Чистый номер!
       params.append('goal', goal);
       params.append('source', window.location.href);
       params.append('token', csrfToken);
@@ -2333,19 +2800,25 @@ bookingForm.addEventListener('submit', async e => {
         alert(result.error || 'Произошла ошибка при отправке заявки.');
         submitBtn.disabled = false;
         submitBtn.textContent = 'Записаться на практику';
-        // Запросим новый CSRF-токен, так как старый сгорел
-        fetchCsrfToken();
+        loadSchedule();
         return;
       }
     } catch (err) { 
       console.warn('Form send error:', err); 
     }
   }
-  // Показываем успех
+  
   setTimeout(() => {
     formWrapper.style.display = 'none';
     formSuccess.style.display = 'block';
   }, 600);
+});
+
+/* ── INITIALIZATION ──────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  loadSchedule();
+  // Автообновление раз в 3 минуты для синхронизации мест
+  setInterval(loadSchedule, 180000);
 });
 
 /* ── TO TOP ──────────────────────────────────────────────────── */
