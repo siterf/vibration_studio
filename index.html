@@ -1015,6 +1015,19 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   margin-bottom: 28px;
   line-height: 1.6;
 }
+.form__promo-callout {
+  background: rgba(196, 154, 90, 0.12);
+  border: 1px dashed rgba(196, 154, 90, 0.4);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-accent);
+  text-align: center;
+  margin-bottom: 20px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
 .form__group { margin-bottom: 16px; }
 .form__input, .form__select {
   width: 100%;
@@ -1204,7 +1217,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 .privacy-policy p, .privacy-policy li { font-size: 14px; line-height: 1.75; color: var(--color-muted); margin-bottom: 12px; }
 .privacy-policy ul { padding-left: 20px; }
-#privacy-toggle:target ~ .privacy-policy { display: block; }
+.privacy-policy:target { display: block; }
 
 /* ============================================================
    FLOATING BUTTONS
@@ -1431,6 +1444,167 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   opacity: 0.4;
   pointer-events: none;
   cursor: not-allowed;
+}
+
+/* Cookie Banner */
+.cookie-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  right: 24px;
+  background: rgba(28, 22, 18, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(120px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease;
+}
+.cookie-banner.show {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.cookie-banner__text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+}
+.cookie-banner__text a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--transition);
+}
+.cookie-banner__text a:hover {
+  color: var(--color-accent-dark);
+}
+.cookie-banner__btn {
+  padding: 10px 28px;
+  font-size: 11px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-white);
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.cookie-banner__btn:hover {
+  background: var(--color-accent-dark);
+  transform: translateY(-1px);
+}
+@media (min-width: 768px) {
+  .cookie-banner {
+    left: auto;
+    right: 24px;
+    width: 420px;
+    bottom: 24px;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+    padding: 18px 24px;
+  }
+  .cookie-banner__text {
+    font-size: 12px;
+  }
+}
+
+/* Promo Widget */
+.promo-widget {
+  position: fixed;
+  bottom: 24px;
+  left: -400px;
+  width: 320px;
+  background: var(--color-surface);
+  border: 1px solid rgba(28, 22, 18, 0.08);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  z-index: 1001;
+  box-shadow: var(--shadow-lg);
+  transition: left 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
+  opacity: 0;
+  display: none;
+}
+@media (min-width: 900px) {
+  .promo-widget {
+    display: block;
+  }
+}
+.promo-widget.show {
+  left: 24px;
+  opacity: 1;
+}
+.promo-widget__close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--color-muted);
+  transition: color var(--transition);
+}
+.promo-widget__close:hover {
+  color: var(--color-text);
+}
+.promo-widget__label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 8px;
+  display: block;
+}
+.promo-widget__title {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--color-text);
+  margin-bottom: 12px;
+}
+.promo-widget__title em {
+  font-style: italic;
+  color: var(--color-accent);
+}
+.promo-widget__text {
+  font-size: 13px;
+  color: var(--color-muted);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.promo-widget__btn {
+  display: inline-flex;
+  width: 100%;
+  justify-content: center;
+  padding: 12px 24px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-white);
+  transition: var(--transition);
+}
+.promo-widget__btn:hover {
+  background: var(--color-accent-dark);
+  box-shadow: 0 4px 12px rgba(196,154,90,.3);
+  transform: translateY(-1px);
 }
 </style>
 </head>
@@ -2010,6 +2184,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
           <h3>Подобрать практику</h3>
           <p>Заполните форму — мы свяжемся в течение 1 часа и подберём удобное время.</p>
           <form id="bookingForm" novalidate>
+            <div class="form__promo-callout">
+              ✨ Дарим скидку 50% на первое пробное занятие!
+            </div>
             <div class="form__group">
               <input class="form__input" type="text" id="name" name="name" placeholder="Ваше имя" required autocomplete="given-name">
             </div>
@@ -2017,15 +2194,25 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
               <input class="form__input" type="tel" id="phone" name="phone" placeholder="+7 (___) ___-__-__" required autocomplete="tel">
             </div>
             <div class="form__group">
-              <select class="form__select" id="goal" name="goal">
-                <option value="" disabled selected>Ваш запрос</option>
-                <option value="Снять стресс">Снять стресс и выгорание</option>
-                <option value="Здоровая спина">Боли в спине / шее</option>
-                <option value="Начинающий">Я начинающий — хочу попробовать</option>
-                <option value="Индивидуально">Индивидуальная / парная практика</option>
-                <option value="Мероприятие">Девичник / день рождения / корпоратив</option>
-                <option value="Гонг">Гонг-медитация</option>
+              <select class="form__select" id="bottomDirection" name="direction" required>
+                <option value="" disabled selected>Выберите практику</option>
               </select>
+            </div>
+            <div id="bottomDateTimeGroup" style="display: none;">
+              <div class="form__group">
+                <select class="form__select" id="bottomDate" name="date">
+                  <option value="" disabled selected>Выберите дату</option>
+                </select>
+              </div>
+              <div class="form__group">
+                <select class="form__select" id="bottomTime" name="time">
+                  <option value="" disabled selected>Выберите время</option>
+                </select>
+              </div>
+            </div>
+            <div class="form__promo-checkbox" style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+              <input type="checkbox" id="bottomPromo" name="promo" style="width: 18px; height: 18px; accent-color: var(--color-accent); cursor: pointer;">
+              <label for="bottomPromo" style="font-size: 13px; color: var(--color-accent); cursor: pointer; font-weight: 500;">✨ Записаться со скидкой 50% (первый раз)</label>
             </div>
             <div class="form__consent">
               <input type="checkbox" id="consent" name="consent" required>
@@ -2042,7 +2229,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
             <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
           <h4>Заявка принята!</h4>
-          <p>Мы свяжемся с вами в ближайшее время и подберём удобное время для занятия.</p>
+          <p id="formSuccessMessage">Мы свяжемся с вами в ближайшее время и подберём удобное время для занятия.</p>
         </div>
       </div>
     </div>
@@ -2148,6 +2335,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
       <li>Субъект вправе потребовать удаления своих данных, направив запрос по телефону +7 (910) 814-98-32.</li>
     </ul>
     <p>Используя форму записи на сайте, вы даёте согласие на обработку персональных данных в соответствии с настоящей политикой.</p>
+    <div style="margin-top: 24px;">
+      <a href="#privacy-toggle" class="btn btn-outline-dark" style="padding: 10px 24px; font-size: 11px;">Скрыть политику</a>
+    </div>
   </div>
 </div>
 
@@ -2177,13 +2367,19 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     <div class="modal__datetime-badge" id="modalDateTimeBadge"></div>
     
     <form id="modalBookingForm" novalidate>
+      <div class="form__promo-callout">
+        ✨ Первое пробное занятие со скидкой 50%!
+      </div>
       <div class="form__group">
         <input class="form__input" type="text" id="modalName" name="name" placeholder="Ваше имя" required autocomplete="given-name">
       </div>
       <div class="form__group">
         <input class="form__input" type="tel" id="modalPhone" name="phone" placeholder="+7 (___) ___-__-__" required autocomplete="tel">
       </div>
-      
+      <div class="form__promo-checkbox" style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+        <input type="checkbox" id="modalPromo" name="promo" style="width: 18px; height: 18px; accent-color: var(--color-accent); cursor: pointer;">
+        <label for="modalPromo" style="font-size: 13px; color: var(--color-accent); cursor: pointer; font-weight: 500;">✨ Записаться со скидкой 50% (первый раз)</label>
+      </div>
       <div class="form__consent">
         <input type="checkbox" id="modalConsent" name="consent" required>
         <label for="modalConsent">Нажимая кнопку, вы соглашаетесь с <a href="#privacy">политикой конфиденциальности</a></label>
@@ -2222,6 +2418,23 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
 </button>
 
+<!-- Cookie Banner -->
+<div class="cookie-banner" id="cookieBanner">
+  <div class="cookie-banner__text">
+    Мы используем файлы cookie для персонализации сервисов и повышения удобства работы с сайтом. Продолжая пользоваться сайтом, вы соглашаетесь с нашей <a href="#privacy">политикой конфиденциальности</a>.
+  </div>
+  <button class="cookie-banner__btn" id="acceptCookiesBtn">Хорошо</button>
+</div>
+
+<!-- Promo Widget (Desktop only) -->
+<div class="promo-widget" id="promoWidget">
+  <button class="promo-widget__close" id="closePromoWidget" aria-label="Закрыть">&times;</button>
+  <span class="promo-widget__label">Спецпредложение</span>
+  <h4 class="promo-widget__title">Первый шаг<br>к <em>спокойствию</em></h4>
+  <p class="promo-widget__text">Дарим скидку 50% на ваше первое пробное занятие йоги при записи онлайн сегодня.</p>
+  <a href="#booking" class="promo-widget__btn" id="promoWidgetBtn">Получить скидку</a>
+</div>
+
 <!-- ============================================================
      JAVASCRIPT
      ============================================================ -->
@@ -2230,7 +2443,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 /* ── CONFIG ─────────────────────────────────────────────────── */
 const CONFIG = {
-  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxDSdiwnYVB4FTrfmYg_BRF2Ne62oZOdafGf_ePIu2knMPrUbpToNjsBJolz-3A5Dlz0A/exec',  // после деплоя Code.gs
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbz2RkYaTSrzhOcIgpKbsxun0Xc1qrEm8mOBh8GIMTK5UrfkDfXO_UYkV2MkEo6KBtJK3Q/exec',  // после деплоя Code.gs
   WHATSAPP: '79108149832',
   TELEGRAM: '79108149832',
 };
@@ -2441,6 +2654,7 @@ async function loadSchedule() {
     
     renderTabs();
     renderDay(currentDayKey);
+    populateBottomDirections();
   } catch (err) {
     console.warn('Failed to load schedule:', err);
     scheduleLoading.style.display = 'none';
@@ -2627,10 +2841,12 @@ modalFormWrapper.addEventListener('submit', async e => {
   const nameInput = document.getElementById('modalName');
   const phoneInput = document.getElementById('modalPhone');
   const consentCheckbox = document.getElementById('modalConsent');
+  const promoCheckbox = document.getElementById('modalPromo');
   
   const name = nameInput.value.trim();
   const phone = phoneInput.value.trim();
   const consent = consentCheckbox.checked;
+  const promo = promoCheckbox ? promoCheckbox.checked : false;
   
   modalFormWrapper.querySelectorAll('.form__error-msg').forEach(el => el.remove());
   modalFormWrapper.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
@@ -2679,6 +2895,11 @@ modalFormWrapper.addEventListener('submit', async e => {
       params.append('direction', modalDirectionInput.value);
       params.append('date', modalDateInput.value);
       params.append('time', modalTimeInput.value);
+      
+      let goalText = 'Запись с расписания';
+      if (promo) goalText += ' (Скидка 50%)';
+      params.append('goal', goalText);
+      
       params.append('token', csrfToken);
       params.append('action', 'book');
       params.append('source', window.location.href);
@@ -2699,6 +2920,11 @@ modalFormWrapper.addEventListener('submit', async e => {
         `;
         loadSchedule();
         return;
+      }
+      
+      const modalSuccessMsgEl = document.getElementById('modalSuccessMessage');
+      if (modalSuccessMsgEl && result && result.message) {
+        modalSuccessMsgEl.textContent = result.message;
       }
     } catch (err) {
       console.warn('Modal form send error:', err);
@@ -2728,18 +2954,25 @@ const formSuccess = document.getElementById('formSuccess');
 bookingForm.addEventListener('submit', async e => {
   e.preventDefault();
   
+  let successMsg = 'Мы свяжемся с вами в ближайшее время и подберём удобное время для занятия.';
   const nameInput = document.getElementById('name');
   const phoneInput = document.getElementById('phone');
-  const goalSelect = document.getElementById('goal');
+  const dirSelect = document.getElementById('bottomDirection');
+  const dateSelect = document.getElementById('bottomDate');
+  const timeSelect = document.getElementById('bottomTime');
+  const promoCheckbox = document.getElementById('bottomPromo');
   const consentCheckbox = document.getElementById('consent');
 
   const name    = nameInput.value.trim();
   const phone   = phoneInput.value.trim();
-  const goal    = goalSelect.value;
+  const direction = dirSelect.value;
+  const date    = dateSelect.value;
+  const time    = timeSelect.value;
+  const promo   = promoCheckbox ? promoCheckbox.checked : false;
   const consent = consentCheckbox.checked;
 
-  document.querySelectorAll('.form__error-msg').forEach(el => el.remove());
-  document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+  bookingForm.querySelectorAll('.form__error-msg').forEach(el => el.remove());
+  bookingForm.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
 
   let hasErrors = false;
 
@@ -2762,12 +2995,19 @@ bookingForm.addEventListener('submit', async e => {
     showError(phoneInput, 'Введите корректный номер (11 цифр)');
   }
 
-  if (!goal) {
-    showError(goalSelect, 'Выберите ваш запрос из списка');
+  if (!direction) {
+    showError(dirSelect, 'Выберите практику из списка');
+  } else if (direction !== 'Другое') {
+    if (!date) {
+      showError(dateSelect, 'Выберите дату занятия');
+    }
+    if (!time) {
+      showError(timeSelect, 'Выберите время занятия');
+    }
   }
 
   if (!consent) {
-    const consentContainer = document.querySelector('.form__consent');
+    const consentContainer = bookingForm.querySelector('.form__consent');
     const errorSpan = document.createElement('span');
     errorSpan.className = 'form__error-msg';
     errorSpan.style.marginTop = '8px';
@@ -2786,7 +3026,16 @@ bookingForm.addEventListener('submit', async e => {
       const params = new URLSearchParams();
       params.append('name', name);
       params.append('phone', phoneDigits); // Чистый номер!
-      params.append('goal', goal);
+      
+      const isSpecificClass = direction !== 'Другое';
+      params.append('direction', isSpecificClass ? direction : 'Общая заявка');
+      params.append('date', isSpecificClass ? date : '');
+      params.append('time', isSpecificClass ? time : '');
+      
+      let goalText = isSpecificClass ? 'Запись на практику' : 'Подобрать индивидуально';
+      if (promo) goalText += ' (Скидка 50%)';
+      params.append('goal', goalText);
+      
       params.append('source', window.location.href);
       params.append('token', csrfToken);
       params.append('action', 'book');
@@ -2804,22 +3053,157 @@ bookingForm.addEventListener('submit', async e => {
         loadSchedule();
         return;
       }
+      
+      if (result && result.message) {
+        successMsg = result.message;
+      }
     } catch (err) { 
       console.warn('Form send error:', err); 
     }
   }
   
   setTimeout(() => {
+    const successMsgEl = document.getElementById('formSuccessMessage');
+    if (successMsgEl) {
+      successMsgEl.textContent = successMsg;
+    }
     formWrapper.style.display = 'none';
     formSuccess.style.display = 'block';
   }, 600);
 });
+
+/* ── COOKIE BANNER ───────────────────────────────────────────── */
+(function() {
+  const banner = document.getElementById('cookieBanner');
+  const btn = document.getElementById('acceptCookiesBtn');
+  if (!banner || !btn) return;
+
+  if (!localStorage.getItem('cookiesAccepted')) {
+    setTimeout(() => {
+      banner.classList.add('show');
+    }, 1500);
+  }
+
+  btn.addEventListener('click', () => {
+    localStorage.setItem('cookiesAccepted', 'true');
+    banner.classList.remove('show');
+  });
+})();
+
+/* ── PROMO WIDGET ────────────────────────────────────────────── */
+(function() {
+  const widget = document.getElementById('promoWidget');
+  const closeBtn = document.getElementById('closePromoWidget');
+  const ctaBtn = document.getElementById('promoWidgetBtn');
+  if (!widget || !closeBtn || !ctaBtn) return;
+
+  if (sessionStorage.getItem('promoDismissed')) return;
+
+  let shown = false;
+  window.addEventListener('scroll', () => {
+    if (shown || sessionStorage.getItem('promoDismissed')) return;
+    
+    if (window.scrollY > 400) {
+      shown = true;
+      setTimeout(() => {
+        if (!sessionStorage.getItem('promoDismissed')) {
+          widget.classList.add('show');
+        }
+      }, 1000);
+    }
+  }, { passive: true });
+
+  function dismiss() {
+    sessionStorage.setItem('promoDismissed', 'true');
+    widget.classList.remove('show');
+  }
+
+  closeBtn.addEventListener('click', dismiss);
+  ctaBtn.addEventListener('click', dismiss);
+})();
 
 /* ── INITIALIZATION ──────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   loadSchedule();
   // Автообновление раз в 3 минуты для синхронизации мест
   setInterval(loadSchedule, 180000);
+});
+
+/* ── DYNAMIC BOTTOM FORM DROPDOWNS ─────────────────────────────── */
+function populateBottomDirections() {
+  const bottomDirSelect = document.getElementById('bottomDirection');
+  if (!bottomDirSelect || !scheduleCache) return;
+
+  const directions = new Set();
+  Object.values(scheduleCache).forEach(dayList => {
+    dayList.forEach(c => {
+      if (c.title) directions.add(c.title);
+    });
+  });
+
+  const selectedVal = bottomDirSelect.value;
+  bottomDirSelect.innerHTML = '<option value="" disabled selected>Выберите практику</option>' +
+    Array.from(directions).map(dir => `<option value="${dir}">${dir}</option>`).join('') +
+    '<option value="Другое">Другое (Консультация)</option>';
+  
+  if (selectedVal && Array.from(directions).includes(selectedVal) || selectedVal === 'Другое') {
+    bottomDirSelect.value = selectedVal;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const bottomDirSelect = document.getElementById('bottomDirection');
+  const bottomDateSelect = document.getElementById('bottomDate');
+  const bottomTimeSelect = document.getElementById('bottomTime');
+  const bottomDateTimeGroup = document.getElementById('bottomDateTimeGroup');
+
+  if (bottomDirSelect && bottomDateSelect && bottomTimeSelect && bottomDateTimeGroup) {
+    bottomDirSelect.addEventListener('change', () => {
+      const dir = bottomDirSelect.value;
+      if (dir === 'Другое' || !dir) {
+        bottomDateTimeGroup.style.display = 'none';
+        bottomDateSelect.removeAttribute('required');
+        bottomTimeSelect.removeAttribute('required');
+      } else {
+        bottomDateTimeGroup.style.display = 'block';
+        bottomDateSelect.setAttribute('required', '');
+        bottomTimeSelect.setAttribute('required', '');
+
+        // Populate dates
+        const dates = new Set();
+        Object.values(scheduleCache).forEach(dayList => {
+          dayList.forEach(c => {
+            if (c.title === dir && Number(c.available) > 0) {
+              dates.add(c.date);
+            }
+          });
+        });
+
+        bottomDateSelect.innerHTML = '<option value="" disabled selected>Выберите дату</option>' +
+          Array.from(dates).map(d => `<option value="${d}">${_formatDateDisplay(d)}</option>`).join('');
+        bottomTimeSelect.innerHTML = '<option value="" disabled selected>Выберите время</option>';
+      }
+    });
+
+    bottomDateSelect.addEventListener('change', () => {
+      const dir = bottomDirSelect.value;
+      const date = bottomDateSelect.value;
+      if (!dir || !date) return;
+
+      // Populate times
+      const times = new Set();
+      Object.values(scheduleCache).forEach(dayList => {
+        dayList.forEach(c => {
+          if (c.title === dir && c.date === date && Number(c.available) > 0) {
+            times.add(c.time);
+          }
+        });
+      });
+
+      bottomTimeSelect.innerHTML = '<option value="" disabled selected>Выберите время</option>' +
+        Array.from(times).map(t => `<option value="${t}">${t}</option>`).join('');
+    });
+  }
 });
 
 /* ── TO TOP ──────────────────────────────────────────────────── */
